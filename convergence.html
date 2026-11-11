@@ -13274,8 +13274,11 @@ globalScope.NAMED_COLORS = NAMED_COLORS;
     if (rCanvas) {
       rCanvas.width = gatewayState.viewportWidth;
       rCanvas.height = gatewayState.viewportHeight;
-      rCanvas.clientWidth = gatewayState.viewportWidth;
-      rCanvas.clientHeight = gatewayState.viewportHeight;
+      // [Kehai audit fix] clientWidth/clientHeight are getter-only on real DOM elements; plain assignment
+      // threw in browsers and stopped the page booting. Pin them as own properties so Vanta's viewport
+      // is 800x600 in the browser exactly as in the Node test harness.
+      Object.defineProperty(rCanvas, "clientWidth", { value: gatewayState.viewportWidth, configurable: true, writable: true });
+      Object.defineProperty(rCanvas, "clientHeight", { value: gatewayState.viewportHeight, configurable: true, writable: true });
     }
     const vantaRes = globalThis.vanta.render(sonderDoc.html, "");
     const vantaPixels = (vantaRes.ctx && typeof vantaRes.ctx.getImageData === "function")
